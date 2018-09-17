@@ -1,0 +1,23 @@
+body {
+    background-image: url("images/background.png");
+    background-size: 33%;
+    background-position-x: 50%;
+    background-position-y: 50%;
+}
+img{
+    width: 90%;
+    height: 340px;
+}
+
+#headerB{
+    width: 100%;
+    background-color: rgba(255,255,255,0.6);
+}
+
+#headerB2{
+    width: 100%;
+    background-color: rgba(255,255,255,0.6);
+}
+#score-board{
+    background-color: rgba(255,255,255,0.6);
+}
