@@ -31,11 +31,17 @@ $(document).ready(function () {
   var draws;
   var i;
 
-
+textDisplay();
   // an example from homework to check if user is online. How does it work?  No one knows. Firebase docs?  Not helpful. 
   connectedRef.on("value", function (snap) {
     if (snap.val() === true) {
       var con = connectionsRef.push(true);
+      var reset = resultsRef
+      reset.onDisconnect().update({
+        wins1:0,
+        wins2:0,
+        draws:0,
+      })
       con.onDisconnect().remove();
     };
   });
@@ -61,21 +67,6 @@ $(document).ready(function () {
       $("#chat").append('<p class="card-text">Console: You are now an observer, prepare to talk trash!</p>');
     }
   });
-
-
-
-  // var guessPromise= new Promise(function(resolve){
-  // guessRef1.once("value").then(function (snap) {guess1 = snap.val()});
-  // guessRef2.once("value").then(function (snap) {guess2 = snap.val()});
-  // if(((guess1 === "r")||(guess1 === "p")||(guess1 === "s"))&&((guess2==="r")||(guess2==="p")||(guess2==="s")))
-  // {
-  //   resolve(true);
-  // }});
-  // guessPromise.then(function(result){
-  //   console.log("hitting boolean")
-  // if (result === true){
-  //   gameLogic();}
-
 
   $(document).on("click", ".fluid-image", function (event) {
     var guess = $(this).attr("data-value");
@@ -127,22 +118,28 @@ $(document).ready(function () {
           };
           database.ref("/ready/ready1/").update({ ready: false });
           database.ref("/ready/ready2/").update({ ready: false });
-          setTimeout(function () {
-            database.ref("/results/wins1").once("value").then(function (snap) { wins1Text = snap.val() });
-            database.ref("/results/wins2").once("value").then(function (snap) { wins2Text = snap.val() });
-            database.ref("/results/draws").once("value").then(function (snap) { drawsText = snap.val() });
-            setTimeout(function () {
-              $("#wins1").text("Player1 Wins: " + wins1Text);
-              $("#wins2").text("Player2 Wins: " + wins2Text);
-              $("#draws").text("Draws: " + drawsText);
-              console.log(wins1, wins2, draws);
-              console.log(wins1Text, wins2Text, drawsText)
-          
-            }, 500)
-          }, 400)
+          textDisplay();
         }, 450)
       }
     }, 400);
-
   });
+resultsRef.on("value", function(){
+  textDisplay()
+});
+ function textDisplay(){
+ database.ref("/results/wins1").once("value").then(function (snap) { wins1Text  = snap.val() });
+ database.ref("/results/wins2").once("value").then(function (snap) { wins2Text  = snap.val() });
+ database.ref("/results/draws").once("value").then(function (snap) { drawsText  = snap.val() });
+  if((wins1Text !== undefined)&&(wins2Text !== undefined)&&(drawsText !== undefined)){
+    console.log("You called me")
+    $("#wins1").text("Player1 Wins: " + wins1Text);
+    $("#wins2").text("Player2 Wins: " + wins2Text);
+    $("#draws").text("Draws: " + drawsText);
+    console.log(wins1, wins2, draws);
+    console.log(wins1Text, wins2Text, drawsText)
+ }
+};
+
+ 
+
 })
