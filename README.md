@@ -23,3 +23,11 @@ There has to be a better way to to do this.
 
 
 ^^^ cleaned that up with a firebase promise statement.  Still ridiculous.
+
+
+So everything works, but there are a couple caveats:
+        if you try to refresh player 1, you end up with 2 player 2's
+
+        The previous message text doesn't empty from the chat input, not sure why but I suspect it's something with the promise statement;
+
+        I use timeouts in a lot of places because I'm not great with Javascript promises, so there's about 15-20 lines of extra code.

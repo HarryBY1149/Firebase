@@ -30,23 +30,24 @@ $(document).ready(function () {
   var wins2;
   var draws;
   var i;
+  var messName = "Anonymous";
 
-textDisplay();
   // an example from homework to check if user is online. How does it work?  No one knows. Firebase docs?  Not helpful. 
   connectedRef.on("value", function (snap) {
     if (snap.val() === true) {
       var con = connectionsRef.push(true);
       var reset = resultsRef
       reset.onDisconnect().update({
-        wins1:0,
-        wins2:0,
-        draws:0,
-      })
+        wins1: 0,
+        wins2: 0,
+        draws: 0,
+      });
       con.onDisconnect().remove();
+      database.ref("/messages/").onDisconnect().remove();
     };
   });
 
-  //promise from firebase that sets player number base on order of connection, if player one refreshes you get stuck with 2 player 2's.
+  //promise from firebase that sets player number based on order of connection, if player one refreshes you get stuck with 2 player 2's.
   connectionsRef.once("value").then(function (snap) {
     $("#player").text(snap.numChildren());
     i = parseInt(($("#player").text()));
@@ -86,33 +87,47 @@ textDisplay();
           console.log("you called game logic!");
           console.log(guess1, guess2);
           if (guess1 == guess2) {
-          database.ref("/results/draws").once("value").then(function(snap){draws =snap.val()});
-          setTimeout(function(){draws++;
-          resultsRef.update({draws:draws})}, 300);
+            database.ref("/results/draws").once("value").then(function (snap) { draws = snap.val() });
+            setTimeout(function () {
+              draws++;
+              resultsRef.update({ draws: draws })
+            }, 300);
           } else if ((guess1 == "r") && (guess2 == "s")) {
-            wins1Ref.once("value").then(function(snap){wins1 =parseInt(snap.val())});
-            setTimeout(function(){wins1++;
-            resultsRef.update({wins1:wins1});},300)
+            wins1Ref.once("value").then(function (snap) { wins1 = parseInt(snap.val()) });
+            setTimeout(function () {
+              wins1++;
+              resultsRef.update({ wins1: wins1 });
+            }, 300)
           } else if ((guess1 == "s") && (guess2 == "p")) {
-            wins1Ref.once("value").then(function(snap){wins1 =parseInt(snap.val())});
-            setTimeout(function(){wins1++;
-            resultsRef.update({wins1:wins1});},300)
+            wins1Ref.once("value").then(function (snap) { wins1 = parseInt(snap.val()) });
+            setTimeout(function () {
+              wins1++;
+              resultsRef.update({ wins1: wins1 });
+            }, 300)
           } else if ((guess1 == "p") && (guess2 == "r")) {
-            wins1Ref.once("value").then(function(snap){wins1 =parseInt(snap.val())});
-            setTimeout(function(){wins1++;
-            resultsRef.update({wins1:wins1});},300)
+            wins1Ref.once("value").then(function (snap) { wins1 = parseInt(snap.val()) });
+            setTimeout(function () {
+              wins1++;
+              resultsRef.update({ wins1: wins1 });
+            }, 300)
           } else if ((guess1 == "r") && (guess2 == "p")) {
-            wins2Ref.once("value").then(function(snap){wins2=parseInt(snap.val())});
-            setTimeout(function(){wins2++;
-            resultsRef.update({wins2:wins2});},300)
+            wins2Ref.once("value").then(function (snap) { wins2 = parseInt(snap.val()) });
+            setTimeout(function () {
+              wins2++;
+              resultsRef.update({ wins2: wins2 });
+            }, 300)
           } else if ((guess1 == "s") && (guess2 == "r")) {
-            wins2Ref.once("value").then(function(snap){wins2=parseInt(snap.val())});
-            setTimeout(function(){wins2++;
-            resultsRef.update({wins2:wins2});},300)
+            wins2Ref.once("value").then(function (snap) { wins2 = parseInt(snap.val()) });
+            setTimeout(function () {
+              wins2++;
+              resultsRef.update({ wins2: wins2 });
+            }, 300)
           } else if ((guess1 == "p") && (guess2 == "s")) {
-            wins2Ref.once("value").then(function(snap){wins2=parseInt(snap.val())});
-            setTimeout(function(){wins2++;
-            resultsRef.update({wins2:wins2});},300)
+            wins2Ref.once("value").then(function (snap) { wins2 = parseInt(snap.val()) });
+            setTimeout(function () {
+              wins2++;
+              resultsRef.update({ wins2: wins2 });
+            }, 300)
           } else {
             console.log("guesses not recognized");
           };
@@ -123,23 +138,48 @@ textDisplay();
       }
     }, 400);
   });
-resultsRef.on("value", function(){
-  textDisplay()
+  resultsRef.on("child_changed", function () {
+   textDisplay();
+  });
+  function textDisplay() {
+    database.ref("/results/wins1").once("value").then(function (snap) { wins1Text = snap.val();
+      $("#wins1").text("Player1 Wins: " + wins1Text); });
+    database.ref("/results/wins2").once("value").then(function (snap) { wins2Text = snap.val();
+      $("#wins2").text("Player2 Wins: " + wins2Text); });
+    database.ref("/results/draws").once("value").then(function (snap) { drawsText = snap.val();
+      $("#draws").text("Draws: " + drawsText); });
+  };
+
+  // Building chat functionality, following a firebase codelab example with some edits
+
+  function loadMessages() { 
+    database.ref("/messages/").limitToLast(1).on("child_added", function (snap) {
+      var data = snap.val();
+      displayMessage(data.name, data.message);
+    });
+  };
+
+  function displayMessage(name, message) {
+      var container = $("<div>")
+      container.append("<p>" + name + ": " + message + "</p>")
+      $("#chat").append(container)
+    }
+
+  $("#submit").on("click", function (event) {
+    event.preventDefault();
+   var messagePromise = new Promise (function(){ 
+    messName = $("#name").val().trim();
+    message = $("#message").val();
+    return database.ref("/messages/").push({
+      name: messName,
+      message: message,
+    })
+  })
+   messagePromise.then(function(){
+     $("#name").val("");
+     $("#message").val("");
+  })
 });
- function textDisplay(){
- database.ref("/results/wins1").once("value").then(function (snap) { wins1Text  = snap.val() });
- database.ref("/results/wins2").once("value").then(function (snap) { wins2Text  = snap.val() });
- database.ref("/results/draws").once("value").then(function (snap) { drawsText  = snap.val() });
-  if((wins1Text !== undefined)&&(wins2Text !== undefined)&&(drawsText !== undefined)){
-    console.log("You called me")
-    $("#wins1").text("Player1 Wins: " + wins1Text);
-    $("#wins2").text("Player2 Wins: " + wins2Text);
-    $("#draws").text("Draws: " + drawsText);
-    console.log(wins1, wins2, draws);
-    console.log(wins1Text, wins2Text, drawsText)
- }
-};
 
- 
-
+  loadMessages();
 })
